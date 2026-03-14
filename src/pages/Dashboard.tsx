@@ -394,7 +394,7 @@ export default function Dashboard() {
 
       <header className="mb-12 flex justify-between items-start relative z-10">
         <div>
-          <h1 className="text-6xl font-light tracking-tight text-white">Iniciar</h1>
+          <h1 className="text-6xl font-light tracking-tight text-white">Conviver Gestão</h1>
           <div className="flex items-center gap-3 mt-4">
             <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md border ${
               connectionStatus === 'connected' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
