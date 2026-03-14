@@ -1,5 +1,6 @@
 import { useStore } from '../store';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { 
   Users, FileText, Plus, Hammer, 
   DollarSign, TrendingUp, Package, Database, 
@@ -121,7 +122,22 @@ function WeatherTile() {
 }
 
 export default function Dashboard() {
-  const { clients, tickets, products, receipts, costs, appointments, companyLogo, restoreData, theme, toggleTheme } = useStore();
+  const { clients, tickets, products, receipts, costs, appointments, companyLogo, restoreData, theme, toggleTheme, isLoading, fetchInitialData } = useStore();
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+
+  useEffect(() => {
+    async function checkConnection() {
+      try {
+        const { error } = await supabase.from('clients').select('id').limit(1);
+        if (error) throw error;
+        setConnectionStatus('connected');
+      } catch (e) {
+        console.error('Connection check failed:', e);
+        setConnectionStatus('error');
+      }
+    }
+    checkConnection();
+  }, []);
   
   const openTickets = tickets.filter(t => t.status !== 'CONCLUIDO').length;
   const totalReceitas = receipts.reduce((acc, curr) => acc + curr.value, 0);
@@ -377,7 +393,33 @@ export default function Dashboard() {
       </div>
 
       <header className="mb-12 flex justify-between items-start relative z-10">
-        <h1 className="text-6xl font-light tracking-tight text-white">Iniciar</h1>
+        <div>
+          <h1 className="text-6xl font-light tracking-tight text-white">Iniciar</h1>
+          <div className="flex items-center gap-3 mt-4">
+            <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md border ${
+              connectionStatus === 'connected' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+              connectionStatus === 'error' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+              'bg-white/10 text-white/40 border-white/10'
+            }`}>
+              <div className={`w-2 h-2 rounded-full ${
+                connectionStatus === 'connected' ? 'bg-green-400 animate-pulse' :
+                connectionStatus === 'error' ? 'bg-red-400' :
+                'bg-white/20'
+              }`} />
+              {connectionStatus === 'connected' ? 'Sincronizado' :
+               connectionStatus === 'error' ? 'Erro de Conexão' :
+               'Conectando...'}
+            </div>
+            <button 
+              onClick={() => fetchInitialData()}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 hover:text-white border border-white/10 backdrop-blur-md transition-all disabled:opacity-50"
+            >
+              <Clock className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+              {isLoading ? 'Sincronizando...' : 'Sincronizar Agora'}
+            </button>
+          </div>
+        </div>
         <div className="flex items-center gap-6">
           <button 
             onClick={toggleTheme}
