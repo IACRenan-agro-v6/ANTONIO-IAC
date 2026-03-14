@@ -20,14 +20,16 @@ import Login from './pages/Login';
 import Weather from './pages/Weather';
 
 function Layout({ children }: { children: React.ReactNode }) {
-  const { theme, toggleTheme, isAuthenticated, logout, fetchInitialData, isLoading } = useStore();
+  const { theme, toggleTheme, isAuthenticated, logout, fetchInitialData, subscribeToChanges, isLoading } = useStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [time, setTime] = useState(new Date());
   
   useEffect(() => {
     fetchInitialData();
-  }, [fetchInitialData]);
+    const unsubscribe = subscribeToChanges();
+    return () => unsubscribe();
+  }, [fetchInitialData, subscribeToChanges]);
 
   useEffect(() => {
     if (theme === 'dark') {

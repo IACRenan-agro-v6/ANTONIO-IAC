@@ -132,6 +132,7 @@ interface AppState {
   isLoading: boolean;
   
   fetchInitialData: () => Promise<void>;
+  subscribeToChanges: () => () => void;
   setCompanyLogo: (logo: string | null) => void;
   setCompanySignature: (signature: string | null) => void;
   setCompanyData: (data: CompanyData) => void;
@@ -230,6 +231,15 @@ export const useStore = create<AppState>()(
         } finally {
           set({ isLoading: false });
         }
+      },
+
+      subscribeToChanges: () => {
+        const unsubscribe = supabaseService.subscribeToChanges(() => {
+          // When a change occurs, re-fetch the data
+          const state = useStore.getState();
+          state.fetchInitialData();
+        });
+        return unsubscribe;
       },
 
       setCompanyLogo: async (logo) => {

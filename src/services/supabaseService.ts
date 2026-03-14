@@ -338,5 +338,26 @@ export const supabaseService = {
       signature_url: signature
     });
     if (error) throw error;
+  },
+
+  // Real-time subscription
+  subscribeToChanges(callback: () => void) {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+        },
+        () => {
+          callback();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }
 };
